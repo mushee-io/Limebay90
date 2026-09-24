@@ -116,7 +116,7 @@ export async function getExploreUniqs(limit = 12): Promise<NoshUniq[]> {
   const factoryCache = new Map<string, Promise<UltraFactoryRow | null>>();
 
   const listings = await Promise.all(
-    resales.rows.slice(0, limit).map(async (sale) => {
+    resales.rows.slice(0, limit).map(async (sale): Promise<NoshUniq | null> => {
       const tokenId = String(sale.token_id);
       const token = await getOwnedToken(sale.owner, tokenId);
 
@@ -143,7 +143,7 @@ export async function getExploreUniqs(limit = 12): Promise<NoshUniq[]> {
         collectionUri: factory?.default_token_uri ?? null,
         assetCreator: factory?.asset_creator ?? null,
         assetManager: factory?.asset_manager ?? null,
-        source: "resale" as const,
+        source: "resale",
       };
     }),
   );
