@@ -56,6 +56,7 @@ export async function getTableRows<T>(input: {
   table: string;
   limit?: number;
   lower_bound?: string | number;
+  upper_bound?: string | number;
   reverse?: boolean;
 }): Promise<UltraTableResponse<T>> {
   return ultraRpc<UltraTableResponse<T>>("/v1/chain/get_table_rows", {
@@ -75,7 +76,7 @@ export async function getChainHealth() {
   };
 }
 
-async function getFactory(factoryId: string): Promise<UltraFactoryRow | null> {
+export async function getFactory(factoryId: string): Promise<UltraFactoryRow | null> {
   const result = await getTableRows<UltraFactoryRow>({
     code: NFT_CONTRACT,
     scope: NFT_CONTRACT,
@@ -88,7 +89,7 @@ async function getFactory(factoryId: string): Promise<UltraFactoryRow | null> {
   return row && String(row.id) === factoryId ? row : null;
 }
 
-async function getOwnedToken(
+export async function getOwnedToken(
   owner: string,
   tokenId: string,
 ): Promise<UltraTokenRow | null> {
@@ -102,6 +103,42 @@ async function getOwnedToken(
 
   const row = result.rows[0];
   return row && String(row.id) === tokenId ? row : null;
+}
+
+export async function getResale(tokenId: string): Promise<UltraResaleRow | null> {
+  const result = await getTableRows<UltraResaleRow>({
+    code: NFT_CONTRACT,
+    scope: NFT_CONTRACT,
+    table: RESALE_TABLE,
+    lower_bound: tokenId,
+    limit: 1,
+  });
+
+  const row = result.rows[0];
+  return row && String(row.token_id) === tokenId ? row : null;
+}
+
+function toNoshUniq(
+  token: UltraTokenRow,
+  owner: string,
+  factory: UltraFactoryRow | null,
+  sale?: UltraResaleRow | null,
+): NoshUniq {
+  return {
+    id: String(token.id),
+    factoryId: String(token.token_factory_id),
+    serialNumber: token.serial_number ?? null,
+    owner,
+    price: sale?.price ?? null,
+    mintDate: token.mint_date ?? null,
+    tokenUri: token.uri ?? null,
+    tokenHash: token.hash ?? null,
+    collectionUri: factory?.default_token_uri ?? null,
+    factoryUri: factory?.factory_uri ?? null,
+    assetCreator: factory?.asset_creator ?? null,
+    assetManager: factory?.asset_manager ?? null,
+    source: sale ? "resale" : "inventory",
+  };
 }
 
 export async function getExploreUniqs(limit = 12): Promise<NoshUniq[]> {
@@ -119,32 +156,16 @@ export async function getExploreUniqs(limit = 12): Promise<NoshUniq[]> {
     resales.rows.slice(0, limit).map(async (sale): Promise<NoshUniq | null> => {
       const tokenId = String(sale.token_id);
       const token = await getOwnedToken(sale.owner, tokenId);
-
       if (!token) return null;
 
       const factoryId = String(token.token_factory_id);
       let factoryPromise = factoryCache.get(factoryId);
-
       if (!factoryPromise) {
         factoryPromise = getFactory(factoryId);
         factoryCache.set(factoryId, factoryPromise);
       }
 
-      const factory = await factoryPromise;
-
-      return {
-        id: tokenId,
-        factoryId,
-        serialNumber: token.serial_number ?? null,
-        owner: sale.owner,
-        price: sale.price,
-        mintDate: token.mint_date ?? null,
-        tokenUri: token.uri ?? null,
-        collectionUri: factory?.default_token_uri ?? null,
-        assetCreator: factory?.asset_creator ?? null,
-        assetManager: factory?.asset_manager ?? null,
-        source: "resale",
-      };
+      return toNoshUniq(token, sale.owner, await factoryPromise, sale);
     }),
   );
 
@@ -171,20 +192,42 @@ export async function getInventoryUniqs(account: string): Promise<NoshUniq[]> {
 
   return tokens.rows.map((token) => {
     const factoryId = String(token.token_factory_id);
-    const factory = factoryMap.get(factoryId);
-
-    return {
-      id: String(token.id),
-      factoryId,
-      serialNumber: token.serial_number ?? null,
-      owner: account,
-      price: null,
-      mintDate: token.mint_date ?? null,
-      tokenUri: token.uri ?? null,
-      collectionUri: factory?.default_token_uri ?? null,
-      assetCreator: factory?.asset_creator ?? null,
-      assetManager: factory?.asset_manager ?? null,
-      source: "inventory" as const,
-    };
+    return toNoshUniq(token, account, factoryMap.get(factoryId) ?? null);
   });
+}
+
+export async function getUniqDetail(owner: string, tokenId: string) {
+  const token = await getOwnedToken(owner, tokenId);
+  if (!token) return null;
+
+  const [factory, sale] = await Promise.all([
+    getFactory(String(token.token_factory_id)),
+    getResale(tokenId),
+  ]);
+
+  const validSale = sale?.owner === owner ? sale : null;
+
+  return {
+    item: toNoshUniq(token, owner, factory, validSale),
+    token,
+    factory,
+    resale: validSale,
+  };
+}
+
+export async function getFactoriesByManager(account: string) {
+  const factories = await getTableRows<UltraFactoryRow>({
+    code: NFT_CONTRACT,
+    scope: NFT_CONTRACT,
+    table: FACTORY_TABLE,
+    limit: 250,
+    reverse: true,
+  });
+
+  return factories.rows
+    .filter(
+      (factory) =>
+        factory.asset_manager === account || factory.asset_creator === account,
+    )
+    .slice(0, 50);
 }
