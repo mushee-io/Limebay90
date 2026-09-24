@@ -1,105 +1,111 @@
 # Nosh
 
-**Nosh is an NFT marketplace for the Ultra blockchain.**
+**Nosh is a native NFT marketplace for Ultra's Uniq standard.**
 
-This repository contains Milestones 1–5 of the Nosh MVP, built against **Ultra Testnet** and Ultra's native **Uniq** NFT standard.
+The MVP is complete through **Milestones 1–10** on **Ultra Testnet**.
 
-## What is complete
+## Completed milestones
 
-### Milestone 1 — Marketplace foundation
-- Next.js + TypeScript application
-- Responsive premium marketplace UI
-- Explore / My Uniqs navigation
-- Honest loading, empty and RPC error states
-- No mock NFT records are substituted for chain data
+1. **Marketplace foundation** — Next.js, TypeScript, responsive premium marketplace UI.
+2. **Ultra Testnet** — chain health checks and RPC failover.
+3. **Ultra Wallet** — official `@ultraos/wallet-sdk` extension connection.
+4. **Wallet inventory** — real `eosio.nft.ft::token.b` ownership.
+5. **Explore** — real `resale.a` listings, prices and factory provenance.
+6. **Uniq detail + metadata** — per-token detail state, dynamic default-token URI substitution, IPFS/HTTPS metadata resolution and artwork.
+7. **Create + mint** — native `create.b` Uniq Factory creation and `issue.b` minting with user-controlled maximum UOS payment caps.
+8. **Sell** — native `resell` listing plus `cancelresell`.
+9. **Buy** — native `buy` transactions using the chain listing price as `max_price`.
+10. **Profile / collections / activity / hardening** — account-derived collection grouping, Nosh transaction receipts, strict account/amount/URI validation, SSRF-safe metadata fetching and production CI.
 
-### Milestone 2 — Ultra Testnet
-- Ultra Testnet chain ID configured
-- Public RPC failover across multiple Ultra block producers
-- Live chain health route at `/api/ultra/health`
-- Optional `ULTRA_TESTNET_RPC` override
+## Source of truth
 
-### Milestone 3 — Ultra Wallet
-- Official `@ultraos/wallet-sdk@^0.6.1`
-- Testnet extension provider
-- Connect / eager reconnect / disconnect
-- Account-aware UI
-- Clear warning when the Ultra browser extension is missing
-
-### Milestone 4 — User Uniq inventory
-- Reads the connected account's real `eosio.nft.ft::token.b` table
-- Resolves each Uniq's real `factory.b` row
-- Displays token ID, factory ID, serial number, owner and on-chain provenance
-
-### Milestone 5 — Live Explore
-- Reads real listings from `eosio.nft.ft::resale.a`
-- Resolves each listing to the seller's real `token.b` row
-- Resolves the real factory from `factory.b`
-- Displays actual UOS listing prices
-- If Testnet returns zero listings, Nosh shows a real empty state instead of fake demo NFTs
-
-## Architecture
+Nosh does not maintain a shadow NFT ledger. Ownership and marketplace state come from Ultra:
 
 ```
-Ultra Wallet Extension
-        |
-        v
-@ultraos/wallet-sdk
-        |
-        v
-     Nosh UI
-        |
-        v
-Next.js server routes
-        |
-        v
-Ultra Testnet RPC
-  eosio.nft.ft
-   ├─ resale.a
-   ├─ token.b
-   └─ factory.b
+eosio.nft.ft
+├── factory.b   # Uniq Factory configuration
+├── token.b     # account-scoped ownership
+└── resale.a    # live resale marketplace
 ```
 
-The RPC reads run through Nosh server routes so the browser is not tied to one block producer's CORS policy. The RPC client automatically falls back across Ultra's documented Testnet producer endpoints.
+## Transaction flow
 
-## Run locally
+All write actions are built in the browser and sent to the **official Ultra Wallet SDK**. The connected user approves/signs them; private keys never enter Nosh.
+
+Supported MVP actions:
+
+```
+create.b
+issue.b
+resell
+cancelresell
+buy
+```
+
+## Metadata
+
+Nosh resolves an individual Uniq from:
+
+1. the token-specific `uri`, or
+2. the factory `default_token_uri`.
+
+Dynamic placeholders supported by the resolver:
+
+```
+{factory_id}
+{id}
+{token_id}
+{hash}
+{serial_number}
+```
+
+`ipfs://` metadata is resolved through an HTTPS IPFS gateway. Server-side metadata fetching rejects localhost/private-network destinations and responses over 2 MB.
+
+## API routes
+
+```
+GET /api/ultra/health
+GET /api/ultra/explore
+GET /api/ultra/inventory?account=<account>
+GET /api/ultra/uniq?owner=<account>&id=<token_id>
+GET /api/ultra/factories?account=<account>
+```
+
+## Run
 
 ```bash
 npm install
 npm run dev
 ```
 
-For Ultra Wallet Extension testing, use HTTPS. The Ultra extension only injects its provider on HTTPS pages. One option with Next is:
+For local Ultra Testnet wallet testing, use HTTPS:
 
 ```bash
 npx next dev --experimental-https
 ```
 
-Then set the Ultra Wallet Extension to **Testnet** and open the HTTPS local URL.
+Set the Ultra Wallet Browser Extension to **Testnet**.
 
 ## Environment
 
-No secret is required for Milestones 1–5.
+No secret is required.
 
-Optional:
+Optional custom RPC:
 
 ```bash
 ULTRA_TESTNET_RPC=https://ultra-testnet.eosphere.io
 ```
 
-If omitted, Nosh uses its built-in RPC failover list.
+## Safety / transaction limits
 
-## Important implementation note
+Nosh never silently submits a transaction. Factory creation and minting expose a maximum UOS payment field, listing prices are validated to 8 decimals, buys use the current on-chain listing price as the maximum price, and every action requires wallet approval.
 
-Ultra Uniq metadata URIs can point to packaged metadata rather than a directly renderable image. In Milestones 1–5 the NFT cards therefore use deterministic Nosh artwork while all identity, ownership, factory and price information comes from Ultra on-chain data. Metadata unpacking / rich NFT detail rendering belongs in the next milestone.
+## CI
 
-## Next
+GitHub Actions runs:
 
-Milestone 6: individual Uniq detail + metadata resolver.
-
-Then:
-- Create Uniq Factory
-- Mint
-- Resell
-- Buy
-- Activity / profiles
+```bash
+npm install
+npm run typecheck
+npm run build
+```
