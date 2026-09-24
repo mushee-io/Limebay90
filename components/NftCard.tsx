@@ -12,7 +12,13 @@ function hueFor(id: string) {
   return hash;
 }
 
-export function NftCard({ item }: { item: NoshUniq }) {
+export function NftCard({
+  item,
+  onOpen,
+}: {
+  item: NoshUniq;
+  onOpen?: (item: NoshUniq) => void;
+}) {
   const hue = hueFor(item.id + item.factoryId);
   const artStyle = {
     "--nosh-hue": String(hue),
@@ -21,40 +27,47 @@ export function NftCard({ item }: { item: NoshUniq }) {
 
   return (
     <article className="nft-card">
-      <div className="nft-art" style={artStyle}>
-        <div className="nft-art-grid" />
-        <span className="nft-art-mark">N</span>
-        <span className="nft-art-id">UNIQ {item.id}</span>
-      </div>
-
-      <div className="nft-card-body">
-        <div className="nft-card-kicker">
-          <span>Factory #{item.factoryId}</span>
-          <span>#{item.serialNumber ?? "—"}</span>
+      <button
+        className="nft-card-open"
+        type="button"
+        onClick={() => onOpen?.(item)}
+        aria-label={"Open Uniq #" + item.id}
+      >
+        <div className="nft-art" style={artStyle}>
+          <div className="nft-art-grid" />
+          <span className="nft-art-mark">N</span>
+          <span className="nft-art-id">UNIQ {item.id}</span>
         </div>
 
-        <h3>Uniq #{item.id}</h3>
+        <div className="nft-card-body">
+          <div className="nft-card-kicker">
+            <span>Factory #{item.factoryId}</span>
+            <span>#{item.serialNumber ?? "—"}</span>
+          </div>
 
-        <div className="nft-card-owner">
-          <span>Owner</span>
-          <strong title={item.owner}>{shortAccount(item.owner)}</strong>
-        </div>
+          <h3>Uniq #{item.id}</h3>
 
-        <div className="nft-card-footer">
-          {item.price ? (
-            <div>
-              <small>Listed for</small>
-              <strong>{item.price}</strong>
-            </div>
-          ) : (
-            <div>
-              <small>Status</small>
-              <strong>Owned</strong>
-            </div>
-          )}
-          <span className="onchain-dot">ONCHAIN</span>
+          <div className="nft-card-owner">
+            <span>Owner</span>
+            <strong title={item.owner}>{shortAccount(item.owner)}</strong>
+          </div>
+
+          <div className="nft-card-footer">
+            {item.price ? (
+              <div>
+                <small>Listed for</small>
+                <strong>{item.price}</strong>
+              </div>
+            ) : (
+              <div>
+                <small>Status</small>
+                <strong>Owned</strong>
+              </div>
+            )}
+            <span className="onchain-dot">VIEW ↗</span>
+          </div>
         </div>
-      </div>
+      </button>
     </article>
   );
 }
