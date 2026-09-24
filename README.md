@@ -85,3 +85,5 @@ Without this variable, Nosh falls back across its configured Ultra Testnet RPC e
 npm run typecheck
 npm run build
 ```
+
+<!-- vercel-deploy-trigger: 2026-09-24 -->
