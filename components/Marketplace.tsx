@@ -239,6 +239,27 @@ export function Marketplace() {
         </div>
       </header>
 
+      <nav className="mobile-nav" aria-label="Nosh mobile navigation">
+        <button
+          className={view === "explore" ? "active" : ""}
+          onClick={() => setView("explore")}
+        >
+          Explore
+        </button>
+        <button
+          className={view === "owned" ? "active" : ""}
+          onClick={openOwned}
+        >
+          My NFTs
+        </button>
+        <button
+          className={view === "create" ? "active" : ""}
+          onClick={() => setView("create")}
+        >
+          Create
+        </button>
+      </nav>
+
       {view === "explore" && (
         <section className="hero">
           <div className="hero-copy">
