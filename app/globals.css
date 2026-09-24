@@ -1,0 +1,723 @@
+:root {
+  --ink: #0a0a0a;
+  --paper: #f3f1eb;
+  --muted: #aaa7a0;
+  --line: rgba(255, 255, 255, 0.14);
+  --violet: #8b5cf6;
+  --acid: #c8ff4d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--ink);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--acid);
+  outline-offset: 3px;
+}
+
+main {
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.topbar {
+  min-height: 78px;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(18px);
+  background: rgba(10, 10, 10, 0.78);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--paper);
+  text-decoration: none;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  font-size: 22px;
+  width: fit-content;
+}
+
+.brand-mark {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 50%;
+  font-size: 18px;
+}
+
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-link {
+  border: 0;
+  background: transparent;
+  color: #8d8b86;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.nav-link.active,
+.nav-link:hover {
+  color: var(--paper);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-link.future {
+  cursor: default;
+}
+
+.nav-link small {
+  font-size: 8px;
+  color: var(--acid);
+  vertical-align: top;
+}
+
+.top-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.network-pill {
+  border: 1px solid var(--line);
+  padding: 9px 12px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: #85827d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.network-pill i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #65615c;
+}
+
+.network-pill.online {
+  color: #e9e7df;
+}
+
+.network-pill.online i {
+  background: var(--acid);
+  box-shadow: 0 0 12px rgba(200, 255, 77, 0.55);
+}
+
+.wallet-button,
+.primary-cta {
+  border: 1px solid var(--paper);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.wallet-button {
+  min-height: 42px;
+  padding: 0 17px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.wallet-button:hover,
+.primary-cta:hover {
+  transform: translateY(-2px);
+}
+
+.wallet-button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.wallet-button.connected {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: transparent;
+  color: var(--paper);
+  border-color: var(--line);
+}
+
+.wallet-button.connected b {
+  color: #77736d;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.hero {
+  min-height: 650px;
+  display: grid;
+  grid-template-columns: 1.18fr 0.82fr;
+  border-bottom: 1px solid var(--line);
+}
+
+.hero-copy {
+  padding: 92px 6vw 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.eyebrow,
+.section-index {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: var(--acid);
+}
+
+.hero h1 {
+  font-size: clamp(58px, 8vw, 124px);
+  line-height: 0.84;
+  letter-spacing: -0.075em;
+  margin: 26px 0 32px;
+  max-width: 900px;
+}
+
+.hero h1 em {
+  color: transparent;
+  -webkit-text-stroke: 1px #87837e;
+  font-style: normal;
+}
+
+.hero p {
+  color: #9b9892;
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 570px;
+  margin: 0 0 36px;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.primary-cta {
+  padding: 15px 19px;
+  border-radius: 3px;
+}
+
+.primary-cta span {
+  margin-left: 22px;
+}
+
+.text-cta {
+  background: transparent;
+  border: 0;
+  color: #8f8c86;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.text-cta:hover {
+  color: var(--paper);
+}
+
+.hero-poster {
+  position: relative;
+  border-left: 1px solid var(--line);
+  overflow: hidden;
+  min-height: 590px;
+  background:
+    radial-gradient(circle at 70% 25%, rgba(139, 92, 246, 0.25), transparent 33%),
+    linear-gradient(145deg, #111 0%, #070707 100%);
+}
+
+.hero-poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+}
+
+.poster-top,
+.poster-bottom {
+  position: absolute;
+  z-index: 2;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.poster-top {
+  top: 28px;
+  left: 28px;
+  color: #85817c;
+}
+
+.poster-bottom {
+  bottom: 28px;
+  right: 28px;
+  color: var(--acid);
+}
+
+.poster-n {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 3;
+  font-size: min(31vw, 470px);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.12em;
+  color: rgba(243, 241, 235, 0.92);
+  mix-blend-mode: screen;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(1px);
+}
+
+.orb-a {
+  width: 320px;
+  height: 320px;
+  background: #7c3aed;
+  right: -70px;
+  top: 120px;
+}
+
+.orb-b {
+  width: 210px;
+  height: 210px;
+  background: var(--acid);
+  left: 22px;
+  bottom: 100px;
+  opacity: 0.72;
+}
+
+.market-shell {
+  padding: 70px 32px 96px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.market-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.market-heading h2 {
+  font-size: clamp(36px, 4.2vw, 70px);
+  letter-spacing: -0.055em;
+  line-height: 0.95;
+  margin: 14px 0 0;
+}
+
+.market-meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  color: #7e7b75;
+  font-size: 11px;
+}
+
+.market-meta button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--paper);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.notice {
+  border: 1px solid rgba(200, 255, 77, 0.33);
+  background: rgba(200, 255, 77, 0.06);
+  color: #d7e7b0;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 12px;
+}
+
+.notice button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.nft-grid,
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.nft-card {
+  min-width: 0;
+  background: var(--ink);
+}
+
+.nft-art {
+  aspect-ratio: 1 / 1.08;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 72% 24%, hsl(var(--nosh-hue) 85% 58%), transparent 31%),
+    radial-gradient(circle at 30% 72%, hsl(var(--nosh-hue-2) 85% 58%), transparent 34%),
+    #111;
+}
+
+.nft-art-grid {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 32px 32px;
+  transform: perspective(380px) rotateX(58deg) scale(1.7);
+  transform-origin: bottom;
+  opacity: 0.45;
+}
+
+.nft-art-mark {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: clamp(90px, 13vw, 210px);
+  font-weight: 900;
+  letter-spacing: -0.12em;
+  color: rgba(255,255,255,0.92);
+}
+
+.nft-art-id {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.75);
+}
+
+.nft-card-body {
+  padding: 16px 16px 18px;
+  border-top: 1px solid var(--line);
+}
+
+.nft-card-kicker {
+  display: flex;
+  justify-content: space-between;
+  color: #77736d;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.nft-card h3 {
+  margin: 11px 0 18px;
+  font-size: 21px;
+  letter-spacing: -0.04em;
+}
+
+.nft-card-owner {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 11px 0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+}
+
+.nft-card-owner span {
+  color: #77736d;
+}
+
+.nft-card-owner strong {
+  font-weight: 800;
+}
+
+.nft-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 15px;
+}
+
+.nft-card-footer div {
+  display: grid;
+  gap: 5px;
+}
+
+.nft-card-footer small {
+  color: #77736d;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.nft-card-footer strong {
+  font-size: 13px;
+}
+
+.onchain-dot {
+  color: var(--acid);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  font-weight: 900;
+}
+
+.skeleton {
+  aspect-ratio: 0.78;
+  background:
+    linear-gradient(110deg, #0f0f0f 8%, #171717 18%, #0f0f0f 33%);
+  background-size: 200% 100%;
+  animation: shimmer 1.35s linear infinite;
+}
+
+@keyframes shimmer {
+  to { background-position-x: -200%; }
+}
+
+.empty-state {
+  min-height: 360px;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  align-content: center;
+  text-align: center;
+  padding: 40px;
+}
+
+.empty-state > span {
+  color: var(--acid);
+  letter-spacing: 0.16em;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.empty-state h3 {
+  margin: 16px 0 8px;
+  font-size: 35px;
+  letter-spacing: -0.05em;
+}
+
+.empty-state p {
+  color: #817e78;
+  max-width: 540px;
+  line-height: 1.6;
+  font-size: 13px;
+  margin: 0 0 24px;
+}
+
+.proof-strip {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.proof-strip div {
+  padding: 28px 32px;
+  border-right: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+}
+
+.proof-strip div:last-child {
+  border-right: 0;
+}
+
+.proof-strip span {
+  color: #66625d;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.proof-strip strong {
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+footer {
+  min-height: 190px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  padding: 32px;
+  gap: 24px;
+  color: #67635e;
+  font-size: 10px;
+}
+
+footer p {
+  text-align: center;
+}
+
+footer > span {
+  text-align: right;
+}
+
+.footer-brand {
+  opacity: 0.78;
+}
+
+@media (max-width: 1100px) {
+  .topbar {
+    grid-template-columns: auto 1fr;
+  }
+
+  .desktop-nav,
+  .network-pill {
+    display: none;
+  }
+
+  .top-actions {
+    justify-self: end;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-poster {
+    min-height: 450px;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .nft-grid,
+  .loading-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .wallet-button.connected b {
+    display: none;
+  }
+
+  .hero-copy {
+    padding: 70px 20px 54px;
+  }
+
+  .hero {
+    min-height: 0;
+  }
+
+  .hero h1 {
+    font-size: clamp(54px, 17vw, 82px);
+  }
+
+  .hero-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hero-poster {
+    min-height: 360px;
+  }
+
+  .market-shell {
+    padding: 56px 16px 70px;
+  }
+
+  .market-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .market-meta {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nft-grid,
+  .loading-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .proof-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .proof-strip div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .proof-strip div:nth-child(-n+2) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  footer {
+    grid-template-columns: 1fr;
+    min-height: 220px;
+  }
+
+  footer p,
+  footer > span {
+    text-align: left;
+  }
+}
