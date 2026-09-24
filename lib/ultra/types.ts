@@ -62,11 +62,14 @@ export interface UltraMetadata {
   name?: string;
   description?: string;
   defaultLocale?: string;
-  media?: Record<string, {
-    contentType?: string;
-    uris?: string[];
-    integrity?: { type?: string; hash?: string };
-  }>;
+  media?: Record<
+    string,
+    {
+      contentType?: string;
+      uris?: string[];
+      integrity?: { type?: string; hash?: string };
+    }
+  >;
   [key: string]: unknown;
 }
 
@@ -97,12 +100,4 @@ export interface WalletAction {
   action: string;
   data: Record<string, unknown>;
   authorization?: Array<{ actor: string; permission: string }>;
-}
-
-export interface NoshActivity {
-  id: string;
-  action: string;
-  summary: string;
-  transactionHash: string;
-  timestamp: string;
 }
