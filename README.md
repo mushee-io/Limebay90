@@ -1,111 +1,87 @@
 # Nosh
 
-**Nosh is a native NFT marketplace for Ultra's Uniq standard.**
+Nosh is a **simple NFT marketplace on Ultra**.
 
-The MVP is complete through **Milestones 1–10** on **Ultra Testnet**.
+The V1 intentionally does only the basics.
 
-## Completed milestones
+## V1 features
 
-1. **Marketplace foundation** — Next.js, TypeScript, responsive premium marketplace UI.
-2. **Ultra Testnet** — chain health checks and RPC failover.
-3. **Ultra Wallet** — official `@ultraos/wallet-sdk` extension connection.
-4. **Wallet inventory** — real `eosio.nft.ft::token.b` ownership.
-5. **Explore** — real `resale.a` listings, prices and factory provenance.
-6. **Uniq detail + metadata** — per-token detail state, dynamic default-token URI substitution, IPFS/HTTPS metadata resolution and artwork.
-7. **Create + mint** — native `create.b` Uniq Factory creation and `issue.b` minting with user-controlled maximum UOS payment caps.
-8. **Sell** — native `resell` listing plus `cancelresell`.
-9. **Buy** — native `buy` transactions using the chain listing price as `max_price`.
-10. **Profile / collections / activity / hardening** — account-derived collection grouping, Nosh transaction receipts, strict account/amount/URI validation, SSRF-safe metadata fetching and production CI.
+- Connect / disconnect Ultra Wallet
+- Create an Ultra Uniq Factory (collection)
+- Mint one Uniq/NFT
+- View NFTs owned by the connected account
+- View live resale listings
+- Open a basic NFT detail view
+- List an owned NFT for sale in UOS
+- Cancel an NFT listing
+- Buy a listed NFT
 
-## Source of truth
+That is the complete product scope for this version.
 
-Nosh does not maintain a shadow NFT ledger. Ownership and marketplace state come from Ultra:
+## Ultra integration
+
+Nosh uses Ultra's native NFT contract instead of deploying a custom NFT contract:
 
 ```
 eosio.nft.ft
-├── factory.b   # Uniq Factory configuration
-├── token.b     # account-scoped ownership
-└── resale.a    # live resale marketplace
+├── create.b       create collection / Uniq Factory
+├── issue.b        mint NFT
+├── resell         list NFT
+├── cancelresell   cancel listing
+└── buy            buy listed NFT
 ```
 
-## Transaction flow
-
-All write actions are built in the browser and sent to the **official Ultra Wallet SDK**. The connected user approves/signs them; private keys never enter Nosh.
-
-Supported MVP actions:
+Read state comes directly from Ultra's NFT tables:
 
 ```
-create.b
-issue.b
-resell
-cancelresell
-buy
+factory.b
+token.b
+resale.a
 ```
 
-## Metadata
+Wallet connection and transaction signing use the official `@ultraos/wallet-sdk`.
 
-Nosh resolves an individual Uniq from:
+## Testnet
 
-1. the token-specific `uri`, or
-2. the factory `default_token_uri`.
-
-Dynamic placeholders supported by the resolver:
+The application targets Ultra Testnet.
 
 ```
-{factory_id}
-{id}
-{token_id}
-{hash}
-{serial_number}
+Chain ID:
+7fc56be645bb76ab9d747b53089f132dcb7681db06f0852cfa03eaf6f7ac80e9
 ```
 
-`ipfs://` metadata is resolved through an HTTPS IPFS gateway. Server-side metadata fetching rejects localhost/private-network destinations and responses over 2 MB.
+For Testnet, use the Ultra Wallet browser extension and make sure the wallet itself is switched to Testnet.
 
-## API routes
+## Create / mint metadata
 
-```
-GET /api/ultra/health
-GET /api/ultra/explore
-GET /api/ultra/inventory?account=<account>
-GET /api/ultra/uniq?owner=<account>&id=<token_id>
-GET /api/ultra/factories?account=<account>
-```
+Ultra Uniqs use off-chain metadata. The basic creator screen accepts an HTTPS or IPFS metadata URI for:
 
-## Run
+- the collection/factory metadata
+- the default NFT metadata
+- optional token-specific metadata when minting
+
+Dynamic `{serial_number}` metadata URLs are supported.
+
+## Run locally
 
 ```bash
 npm install
-npm run dev
-```
-
-For local Ultra Testnet wallet testing, use HTTPS:
-
-```bash
 npx next dev --experimental-https
 ```
 
-Set the Ultra Wallet Browser Extension to **Testnet**.
+HTTPS is recommended because the Ultra Wallet extension injects its provider on HTTPS pages.
 
-## Environment
-
-No secret is required.
-
-Optional custom RPC:
+## Optional RPC override
 
 ```bash
 ULTRA_TESTNET_RPC=https://ultra-testnet.eosphere.io
 ```
 
-## Safety / transaction limits
+Without this variable, Nosh falls back across its configured Ultra Testnet RPC endpoints.
 
-Nosh never silently submits a transaction. Factory creation and minting expose a maximum UOS payment field, listing prices are validated to 8 decimals, buys use the current on-chain listing price as the maximum price, and every action requires wallet approval.
-
-## CI
-
-GitHub Actions runs:
+## Checks
 
 ```bash
-npm install
 npm run typecheck
 npm run build
 ```
