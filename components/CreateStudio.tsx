@@ -45,7 +45,9 @@ export function CreateStudio({ account, onConnect, onExecute }: Props) {
       if (!response.ok) throw new Error(data.error || "Factory lookup failed.");
       setFactories(data.factories ?? []);
     } catch (error) {
-      setLocalError(error instanceof Error ? error.message : "Could not load factories.");
+      setLocalError(
+        error instanceof Error ? error.message : "Could not load factories.",
+      );
     }
   }, [account]);
 
@@ -68,12 +70,14 @@ export function CreateStudio({ account, onConnect, onExecute }: Props) {
       setBusy(true);
       const success = await onExecute(
         action,
-        "Create factory",
+        "Create collection",
         "Created a Nosh Uniq Factory",
       );
       if (success) await loadFactories();
     } catch (error) {
-      setLocalError(error instanceof Error ? error.message : "Factory creation failed.");
+      setLocalError(
+        error instanceof Error ? error.message : "Collection creation failed.",
+      );
     } finally {
       setBusy(false);
     }
@@ -92,7 +96,7 @@ export function CreateStudio({ account, onConnect, onExecute }: Props) {
       setBusy(true);
       await onExecute(
         action,
-        "Mint Uniq",
+        "Mint NFT",
         "Minted one Uniq from factory #" + mintFactoryId,
       );
     } catch (error) {
@@ -105,74 +109,101 @@ export function CreateStudio({ account, onConnect, onExecute }: Props) {
   return (
     <div className="studio-grid">
       <section className="studio-panel">
+        <div className="studio-topline">
+          <span className="studio-step">01</span>
+          <span>Collection setup</span>
+        </div>
+
         <div className="panel-heading">
-          <span>FACTORY / CREATE.B</span>
           <h3>Create a collection</h3>
           <p>
-            You are both creator and manager. Ultra charges the connected account
-            for factory RAM; Nosh caps that payment at the value you set below.
+            Start with a native Ultra Uniq Factory. Your wallet remains the
+            creator and manager, and the payment cap below protects the UOS
+            amount you approve.
           </p>
         </div>
 
-        <label>
-          Factory metadata URI
-          <input
-            value={factoryUri}
-            onChange={(event) => setFactoryUri(event.target.value)}
-            placeholder="https://…/factory.json or ipfs://…"
-          />
-        </label>
-        <label>
-          Default Uniq metadata URI
-          <input
-            value={defaultTokenUri}
-            onChange={(event) => setDefaultTokenUri(event.target.value)}
-            placeholder="https://…/{serial_number}.json"
-          />
-        </label>
+        <div className="form-stack">
+          <label>
+            <span>Collection metadata URI</span>
+            <input
+              value={factoryUri}
+              onChange={(event) => setFactoryUri(event.target.value)}
+              placeholder="https://…/factory.json or ipfs://…"
+            />
+          </label>
 
-        <div className="form-row">
           <label>
-            Max supply
+            <span>Default NFT metadata URI</span>
             <input
-              inputMode="numeric"
-              value={maxSupply}
-              onChange={(event) => setMaxSupply(event.target.value)}
+              value={defaultTokenUri}
+              onChange={(event) => setDefaultTokenUri(event.target.value)}
+              placeholder="https://…/{serial_number}.json"
             />
           </label>
-          <label>
-            Creator royalty %
-            <input
-              inputMode="decimal"
-              value={royaltyPercent}
-              onChange={(event) => setRoyaltyPercent(event.target.value)}
-            />
-          </label>
-          <label>
-            Max factory RAM payment
-            <div className="input-unit">
+
+          <div className="form-row">
+            <label>
+              <span>Max supply</span>
               <input
-                inputMode="decimal"
-                value={factoryMaxUos}
-                onChange={(event) => setFactoryMaxUos(event.target.value)}
+                inputMode="numeric"
+                value={maxSupply}
+                onChange={(event) => setMaxSupply(event.target.value)}
               />
-              <span>UOS</span>
-            </div>
-          </label>
+            </label>
+
+            <label>
+              <span>Royalty</span>
+              <div className="input-unit">
+                <input
+                  inputMode="decimal"
+                  value={royaltyPercent}
+                  onChange={(event) => setRoyaltyPercent(event.target.value)}
+                />
+                <span>%</span>
+              </div>
+            </label>
+
+            <label>
+              <span>Max RAM payment</span>
+              <div className="input-unit">
+                <input
+                  inputMode="decimal"
+                  value={factoryMaxUos}
+                  onChange={(event) => setFactoryMaxUos(event.target.value)}
+                />
+                <span>UOS</span>
+              </div>
+            </label>
+          </div>
         </div>
 
-        <button className="primary-cta wide" onClick={createFactory} disabled={busy}>
-          {busy ? "Waiting for Ultra…" : "Create factory →"}
-        </button>
+        <div className="panel-action">
+          <div>
+            <small>Wallet approval required</small>
+            <span>Ultra action · create.b</span>
+          </div>
+          <button
+            className="primary-cta"
+            onClick={createFactory}
+            disabled={busy}
+          >
+            {busy ? "Waiting for Ultra…" : "Create collection"}
+          </button>
+        </div>
       </section>
 
       <section className="studio-panel">
+        <div className="studio-topline">
+          <span className="studio-step">02</span>
+          <span>Mint NFT</span>
+        </div>
+
         <div className="panel-heading">
-          <span>MINT / ISSUE.B</span>
-          <h3>Mint a Uniq</h3>
+          <h3>Mint from a collection</h3>
           <p>
-            Mint one token to any valid Ultra account. Leave token metadata blank
-            to use the factory&apos;s default Uniq metadata.
+            Choose one of your factories or enter its ID manually. Leave the
+            token metadata field blank to inherit the collection default.
           </p>
         </div>
 
@@ -184,53 +215,64 @@ export function CreateStudio({ account, onConnect, onExecute }: Props) {
                 className={mintFactoryId === String(factory.id) ? "selected" : ""}
                 onClick={() => setMintFactoryId(String(factory.id))}
               >
-                #{String(factory.id)}
+                <strong>Factory #{String(factory.id)}</strong>
                 <small>{factory.minted_tokens_no ?? 0} minted</small>
               </button>
             ))}
           </div>
         )}
 
-        <label>
-          Factory ID
-          <input
-            inputMode="numeric"
-            value={mintFactoryId}
-            onChange={(event) => setMintFactoryId(event.target.value)}
-            placeholder="e.g. 2048"
-          />
-        </label>
-        <label>
-          Recipient
-          <input
-            value={recipient}
-            onChange={(event) => setRecipient(event.target.value)}
-            placeholder="Ultra account"
-          />
-        </label>
-        <label>
-          Token metadata URI <small>(optional)</small>
-          <input
-            value={tokenUri}
-            onChange={(event) => setTokenUri(event.target.value)}
-            placeholder="ipfs://… or https://…"
-          />
-        </label>
-        <label>
-          Max mint RAM payment
-          <div className="input-unit">
+        <div className="form-stack">
+          <label>
+            <span>Factory ID</span>
             <input
-              inputMode="decimal"
-              value={mintMaxUos}
-              onChange={(event) => setMintMaxUos(event.target.value)}
+              inputMode="numeric"
+              value={mintFactoryId}
+              onChange={(event) => setMintFactoryId(event.target.value)}
+              placeholder="e.g. 2048"
             />
-            <span>UOS</span>
-          </div>
-        </label>
+          </label>
 
-        <button className="primary-cta wide" onClick={mint} disabled={busy}>
-          {busy ? "Waiting for Ultra…" : "Mint Uniq →"}
-        </button>
+          <label>
+            <span>Recipient</span>
+            <input
+              value={recipient}
+              onChange={(event) => setRecipient(event.target.value)}
+              placeholder="Ultra account"
+            />
+          </label>
+
+          <label>
+            <span>Token metadata URI <small>optional</small></span>
+            <input
+              value={tokenUri}
+              onChange={(event) => setTokenUri(event.target.value)}
+              placeholder="ipfs://… or https://…"
+            />
+          </label>
+
+          <label>
+            <span>Max RAM payment</span>
+            <div className="input-unit">
+              <input
+                inputMode="decimal"
+                value={mintMaxUos}
+                onChange={(event) => setMintMaxUos(event.target.value)}
+              />
+              <span>UOS</span>
+            </div>
+          </label>
+        </div>
+
+        <div className="panel-action">
+          <div>
+            <small>Wallet approval required</small>
+            <span>Ultra action · issue.b</span>
+          </div>
+          <button className="primary-cta" onClick={mint} disabled={busy}>
+            {busy ? "Waiting for Ultra…" : "Mint NFT"}
+          </button>
+        </div>
       </section>
 
       {localError && <div className="notice studio-notice">{localError}</div>}
