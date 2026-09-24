@@ -12,6 +12,7 @@ import {
 } from "@/lib/ultra/wallet";
 
 type View = "explore" | "owned" | "create";
+type SortMode = "newest" | "price";
 
 type Health = {
   online: boolean;
@@ -29,8 +30,14 @@ async function readJson<T>(url: string): Promise<T> {
   return json;
 }
 
+function numericPrice(value: string | null) {
+  if (!value) return Number.POSITIVE_INFINITY;
+  return Number.parseFloat(value.replace(" UOS", ""));
+}
+
 export function Marketplace() {
   const [view, setView] = useState<View>("explore");
+  const [sortMode, setSortMode] = useState<SortMode>("newest");
   const [account, setAccount] = useState<string | null>(null);
   const [explore, setExplore] = useState<NoshUniq[]>([]);
   const [owned, setOwned] = useState<NoshUniq[]>([]);
@@ -174,21 +181,57 @@ export function Marketplace() {
   const activeItems = view === "explore" ? explore : owned;
   const loading = view === "explore" ? loadingExplore : loadingOwned;
 
+  const displayItems = useMemo(() => {
+    const items = [...activeItems];
+
+    if (sortMode === "price") {
+      items.sort((a, b) => numericPrice(a.price) - numericPrice(b.price));
+      return items;
+    }
+
+    items.sort((a, b) => Number(b.id) - Number(a.id));
+    return items;
+  }, [activeItems, sortMode]);
+
   const openOwned = () => {
     setView("owned");
     if (account) loadInventory(account);
   };
 
+  const pageCopy =
+    view === "explore"
+      ? {
+          title: "Explore",
+          description:
+            "Discover live Ultra Uniq listings, their factory provenance, ownership and UOS price.",
+        }
+      : view === "owned"
+        ? {
+            title: "My NFTs",
+            description:
+              "Your Ultra Uniqs, read directly from your connected Testnet account.",
+          }
+        : {
+            title: "Create",
+            description:
+              "Create a Uniq Factory, then mint NFTs from it using your Ultra wallet.",
+          };
+
   return (
-    <main>
+    <main className="site-shell">
       <header className="topbar">
         <button
           className="brand brand-button"
           onClick={() => setView("explore")}
           aria-label="Nosh home"
         >
-          <span className="brand-mark">N</span>
-          <span>NOSH</span>
+          <span className="brand-symbol" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+            <i />
+          </span>
+          <span>nosh.</span>
         </button>
 
         <nav className="desktop-nav" aria-label="Nosh">
@@ -202,7 +245,7 @@ export function Marketplace() {
             className={view === "owned" ? "nav-link active" : "nav-link"}
             onClick={openOwned}
           >
-            My NFTs
+            Gallery
           </button>
           <button
             className={view === "create" ? "nav-link active" : "nav-link"}
@@ -210,13 +253,19 @@ export function Marketplace() {
           >
             Create
           </button>
+          <span className="nav-link nav-static">Ultra</span>
+          <span className="nav-link nav-static">Docs</span>
         </nav>
 
         <div className="top-actions">
-          <span className={health.online ? "network-pill online" : "network-pill"}>
+          <span className={health.online ? "network-chip online" : "network-chip"}>
             <i />
-            ULTRA TESTNET
+            Ultra Testnet
           </span>
+
+          <button className="launch-button" onClick={() => setView("create")}>
+            Launch
+          </button>
 
           {account ? (
             <button
@@ -233,7 +282,7 @@ export function Marketplace() {
               onClick={connect}
               disabled={walletBusy}
             >
-              {walletBusy ? "Connecting…" : "Connect Ultra"}
+              {walletBusy ? "Connecting…" : "Connect wallet"}
             </button>
           )}
         </div>
@@ -250,7 +299,7 @@ export function Marketplace() {
           className={view === "owned" ? "active" : ""}
           onClick={openOwned}
         >
-          My NFTs
+          Gallery
         </button>
         <button
           className={view === "create" ? "active" : ""}
@@ -260,82 +309,27 @@ export function Marketplace() {
         </button>
       </nav>
 
-      {view === "explore" && (
-        <section className="hero">
-          <div className="hero-copy">
-            <span className="eyebrow">NFTS ON ULTRA / SIMPLE.</span>
-            <h1>
-              Create.
-              <br />
-              <em>Own. Trade.</em>
-            </h1>
-            <p>
-              Nosh is a simple NFT marketplace built on Ultra Uniqs. Create a
-              collection, mint an NFT, list it in UOS, or buy one from another
-              Ultra user.
+      <div className="page-wrap">
+        <section className="page-intro">
+          <div>
+            <p className="page-kicker">
+              {view === "explore"
+                ? "Marketplace"
+                : view === "owned"
+                  ? "Collection"
+                  : "Creator studio"}
             </p>
-            <div className="hero-actions">
-              <button
-                className="primary-cta"
-                onClick={() => setView("create")}
-              >
-                Create NFT <span>↗</span>
-              </button>
-              <button className="text-cta" onClick={openOwned}>
-                View my NFTs →
-              </button>
-            </div>
+            <h1>{pageCopy.title}</h1>
+            <p className="page-description">{pageCopy.description}</p>
           </div>
 
-          <div className="hero-poster" aria-hidden="true">
-            <span className="poster-top">NATIVE / ULTRA UNIQ</span>
-            <div className="orb orb-a" />
-            <div className="orb orb-b" />
-            <span className="poster-n">N</span>
-            <span className="poster-bottom">NO EXTRA COMPLEXITY.</span>
+          <div className="page-status">
+            <span>{health.online ? "Live" : "Checking"}</span>
+            <strong>
+              Block {health.headBlock ? health.headBlock.toLocaleString() : "—"}
+            </strong>
           </div>
         </section>
-      )}
-
-      <section
-        className={view === "explore" ? "market-shell" : "market-shell subview-shell"}
-      >
-        <div className="market-heading">
-          <div>
-            <span className="section-index">
-              {view === "explore"
-                ? "01 / MARKET"
-                : view === "owned"
-                  ? "02 / MY NFTS"
-                  : "03 / CREATE"}
-            </span>
-            <h2>
-              {view === "explore"
-                ? "NFTs for sale"
-                : view === "owned"
-                  ? "Your NFTs"
-                  : "Create + mint"}
-            </h2>
-          </div>
-
-          {(view === "explore" || view === "owned") && (
-            <div className="market-meta">
-              {view === "explore" ? (
-                <>
-                  <span>{explore.length} live listings</span>
-                  <button onClick={loadExplore}>Refresh ↻</button>
-                </>
-              ) : account ? (
-                <>
-                  <span>{owned.length} owned NFTs</span>
-                  <button onClick={() => loadInventory(account)}>Refresh ↻</button>
-                </>
-              ) : (
-                <button onClick={connect}>Connect wallet →</button>
-              )}
-            </div>
-          )}
-        </div>
 
         {notice && (
           <div className="notice" role="status">
@@ -346,8 +340,82 @@ export function Marketplace() {
           </div>
         )}
 
+        {view === "explore" && explore.length > 0 && (
+          <section className="trending-section">
+            <div className="section-heading">
+              <div>
+                <span>Trending</span>
+                <p>Live resale inventory from Ultra Testnet.</p>
+              </div>
+              <button onClick={loadExplore}>Refresh ↻</button>
+            </div>
+
+            <div className="trending-row">
+              {explore.slice(0, 5).map((item) => (
+                <button
+                  key={"trend-" + item.id}
+                  className="trend-card"
+                  onClick={() => setSelected(item)}
+                >
+                  <span className="trend-avatar">N</span>
+                  <div>
+                    <strong>Uniq #{item.id}</strong>
+                    <small>Factory #{item.factoryId}</small>
+                  </div>
+                  <div className="trend-value">
+                    <strong>{item.price || "Not listed"}</strong>
+                    <small>UOS market</small>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
         {(view === "explore" || view === "owned") && (
-          <>
+          <section className="market-section">
+            <div className="filter-row">
+              <div className="pill-group">
+                <button
+                  className={sortMode === "newest" ? "pill active" : "pill"}
+                  onClick={() => setSortMode("newest")}
+                >
+                  Newest
+                </button>
+                <button
+                  className={sortMode === "price" ? "pill active" : "pill"}
+                  onClick={() => setSortMode("price")}
+                >
+                  Price
+                </button>
+                <span className="pill muted-pill">Ultra</span>
+                <span className="pill muted-pill">UOS</span>
+              </div>
+
+              <div className="market-meta">
+                <span>
+                  {view === "explore"
+                    ? explore.length + " live listings"
+                    : account
+                      ? owned.length + " owned NFTs"
+                      : "Wallet not connected"}
+                </span>
+                {view === "owned" && !account ? (
+                  <button onClick={connect}>Connect wallet</button>
+                ) : (
+                  <button
+                    onClick={
+                      view === "explore"
+                        ? loadExplore
+                        : () => account && loadInventory(account)
+                    }
+                  >
+                    Refresh
+                  </button>
+                )}
+              </div>
+            </div>
+
             {loading ? (
               <div className="loading-grid" aria-label="Loading NFTs">
                 {Array.from({ length: 8 }).map((_, index) => (
@@ -356,16 +424,16 @@ export function Marketplace() {
               </div>
             ) : view === "owned" && !account ? (
               <div className="empty-state">
-                <span>WALLET NOT CONNECTED</span>
-                <h3>Connect Ultra Wallet.</h3>
-                <p>Your Ultra Uniqs will appear here directly from the chain.</p>
+                <span>Wallet required</span>
+                <h3>Connect your Ultra wallet.</h3>
+                <p>Your Uniqs will appear here directly from your Testnet account.</p>
                 <button className="primary-cta" onClick={connect}>
-                  Connect Ultra
+                  Connect wallet
                 </button>
               </div>
-            ) : activeItems.length === 0 ? (
+            ) : displayItems.length === 0 ? (
               <div className="empty-state">
-                <span>NOTHING HERE YET</span>
+                <span>Nothing here yet</span>
                 <h3>
                   {view === "explore"
                     ? "No NFTs are listed right now."
@@ -373,7 +441,7 @@ export function Marketplace() {
                 </h3>
                 <p>
                   {view === "explore"
-                    ? "Nosh shows real Ultra Testnet listings only."
+                    ? "Nosh only shows real Ultra Testnet resale listings."
                     : "Create a collection and mint your first NFT."}
                 </p>
                 {view === "owned" && (
@@ -381,13 +449,13 @@ export function Marketplace() {
                     className="primary-cta"
                     onClick={() => setView("create")}
                   >
-                    Create NFT →
+                    Create NFT
                   </button>
                 )}
               </div>
             ) : (
               <div className="nft-grid">
-                {activeItems.map((item) => (
+                {displayItems.map((item) => (
                   <NftCard
                     key={item.source + "-" + item.owner + "-" + item.id}
                     item={item}
@@ -396,7 +464,7 @@ export function Marketplace() {
                 ))}
               </div>
             )}
-          </>
+          </section>
         )}
 
         {view === "create" && (
@@ -406,39 +474,46 @@ export function Marketplace() {
             onExecute={execute}
           />
         )}
-      </section>
-
-      <section className="proof-strip">
-        <div>
-          <span>NETWORK</span>
-          <strong>ULTRA TESTNET</strong>
-        </div>
-        <div>
-          <span>NFT</span>
-          <strong>UNIQ</strong>
-        </div>
-        <div>
-          <span>MARKET</span>
-          <strong>UOS</strong>
-        </div>
-        <div>
-          <span>BLOCK</span>
-          <strong>
-            {health.headBlock ? health.headBlock.toLocaleString() : "—"}
-          </strong>
-        </div>
-      </section>
+      </div>
 
       <footer>
-        <button
-          className="brand brand-button footer-brand"
-          onClick={() => setView("explore")}
-        >
-          <span className="brand-mark">N</span>
-          <span>NOSH</span>
-        </button>
-        <p>Simple NFT marketplace on Ultra.</p>
-        <span>TESTNET V1</span>
+        <div className="footer-brand-block">
+          <button
+            className="brand brand-button footer-brand"
+            onClick={() => setView("explore")}
+          >
+            <span className="brand-symbol" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+              <i />
+            </span>
+            <span>nosh.</span>
+          </button>
+          <p>A simple NFT marketplace for Ultra Uniqs.</p>
+        </div>
+
+        <div className="footer-column">
+          <span>Product</span>
+          <button onClick={() => setView("explore")}>Explore</button>
+          <button onClick={openOwned}>Gallery</button>
+          <button onClick={() => setView("create")}>Create</button>
+        </div>
+
+        <div className="footer-column">
+          <span>Network</span>
+          <strong>Ultra Testnet</strong>
+          <small>eosio.nft.ft</small>
+          <small>UOS marketplace</small>
+        </div>
+
+        <div className="footer-column">
+          <span>Status</span>
+          <strong>{health.online ? "Operational" : "Checking"}</strong>
+          <small>
+            Block {health.headBlock ? health.headBlock.toLocaleString() : "—"}
+          </small>
+        </div>
       </footer>
 
       {selected && (
